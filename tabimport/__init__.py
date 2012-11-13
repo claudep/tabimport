@@ -11,6 +11,7 @@ Usage:
 """
 import csv
 import logging
+from datetime import datetime
 
 try:
     # XLS format
@@ -242,7 +243,11 @@ class XLSImportedFile(ImportedFile):
         for i, cell in enumerate(row):
             if i in self._ignored_headers_idx[self.current_index]:
                 continue
-            row_dict[self.get_headers()[i]] = cell.value
+            if cell.ctype == xlrd.XL_CELL_DATE:
+                value = datetime(*xlrd.xldate_as_tuple(cell.value, self.book.datemode))
+            else:
+                value = cell.value
+            row_dict[headers[i]] = value
         self._row_index += 1
         return row_dict
 
