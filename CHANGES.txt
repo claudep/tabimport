@@ -1,1 +1,13 @@
-v0.1, 2012-11-09 -- Initial release.
+=======
+CHANGES
+=======
+
+v0.2, ?
+-------
+
+* Added Django interface to help matching imported data with model field names.
+
+v0.1, 2012-11-09
+----------------
+
+* Initial release.
