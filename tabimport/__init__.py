@@ -282,9 +282,15 @@ class XLSXImportedFile(ImportedFile):
         if not self.current_index in self._headers:
             self._headers[self.current_index] = []
             self._ignored_headers_idx[self.current_index] = []
+            empty = 0
             for i, cell in enumerate(self.current_sheet.rows[0], start=1):
                 if cell.value is None:
                     value = u'<col %d>' % (i,)
+                    empty +=1
+                    # After 10 empty headers, assume we are done. With some sheets,
+                    # the maximum number of cols is returned :-/
+                    if empty >= 10:
+                        break
                 else:
                     value = cell.value
                 self._headers[self.current_index].append(value)
