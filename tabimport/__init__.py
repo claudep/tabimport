@@ -312,7 +312,7 @@ class XLSXImportedFile(ImportedFile):
         for i, cell in enumerate(row):
             if i in self._ignored_headers_idx[self.current_index]:
                 continue
-            row_dict[headers[i]] = cell.value
+            row_dict[headers[i]] = cell.value if cell.value is not None else ''
         self._row_index += 1
         return row_dict
 
