@@ -8,8 +8,7 @@ XLS or XLSX files.
 Some formats require an external Python library:
 
   * ODF: ooolib
-  * XLS: xlrd
-  * XLSX: openpyxl
+  * XLS/XLSX: xlrd
 
 This library is meant to be used inside a Django project context.
 
