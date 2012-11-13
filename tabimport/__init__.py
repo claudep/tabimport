@@ -105,7 +105,7 @@ class ImportedFile(object):
                         self.file_path = self.temp_f.name
                     else:
                         self.file_path = None
-                        self.file_content = datafile.file
+                        self.file_content = datafile.file.read()
 
     def __iter__(self):
         return self
