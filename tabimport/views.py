@@ -28,6 +28,8 @@ class DataImportView(SessionWizardView):
         try:
             created, modified = form_list[-1].import_data()
         except Exception as e:
+            if settings.DEBUG:
+                raise
             messages.error(self.request, _("The import failed. Error message: %s") % e)
         else:
             messages.info(self.request, _("Created objects: %(cr)d, modified objects: %(mod)d") % {

@@ -24,6 +24,7 @@ class FileuploadForm(forms.Form):
             imp_file = FileFactory(f)
         except UnsupportedFileFormat as e:
             raise forms.ValidationError("Error: %s" % e)
+        return f
 
 
 class MatchingForm(forms.Form):

@@ -11,6 +11,7 @@ Usage:
 """
 import csv
 import logging
+import tempfile
 from datetime import datetime
 
 try:
@@ -82,6 +83,8 @@ class FileFactory(object):
 
 class ImportedFile(object):
     """ Abstract class to get file object in different formats """
+    # Set to True if the external lib does not support file-like objects
+    force_file_to_disk = False
 
     def __init__(self, datafile, sheet_index=0, skip_lines=None):
         """ datafile can be either a path (string) or a file object
@@ -103,16 +106,24 @@ class ImportedFile(object):
                 try:
                     self.file_path = datafile.file.name
                 except AttributeError:
-                    self.file_path = None
-                    self.file_content = datafile.file
-
-    def get_headers(self):
-        raise NotImplementedError("Abstract class")
+                    if self.force_file_to_disk:
+                        # set to self, so it is not removed before the instance is deleted
+                        self.temp_f = tempfile.NamedTemporaryFile()
+                        for data in datafile.chunks():
+                            self.temp_f.write(data)
+                        assert self.temp_f.tell() == datafile.size
+                        self.file_path = self.temp_f.name
+                    else:
+                        self.file_path = None
+                        self.file_content = datafile.file
 
     def __iter__(self):
         return self
 
     def next(self):
+        raise NotImplementedError("Abstract class")
+
+    def get_headers(self):
         raise NotImplementedError("Abstract class")
 
     def activate_sheet(self, idx):
@@ -267,6 +278,8 @@ class XLSImportedFile(ImportedFile):
 
 class XLSXImportedFile(ImportedFile):
     """ XLSX reader based on openpyxl """
+    force_file_to_disk = True
+
     def __init__(self, datafile, sheet_index=0, skip_lines=None):
         if not has_openpyxl:
             raise NotImplementedError("The openpyxl library is not available")
