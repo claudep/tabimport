@@ -99,9 +99,12 @@ class ImportedFile(object):
         else:
             try:
                 self.file_path = datafile.temporary_file_path()
-            except:
-                self.file_path = None
-                self.file_content = datafile.file
+            except AttributeError:
+                try:
+                    self.file_path = datafile.file.name
+                except AttributeError:
+                    self.file_path = None
+                    self.file_content = datafile.file
 
     def get_headers(self):
         raise NotImplementedError("Abstract class")
@@ -240,6 +243,7 @@ class XLSImportedFile(ImportedFile):
             raise StopIteration
         row_dict = SortedDict()
         row = self.current_sheet.row(self._row_index)
+        headers = self.get_headers()
         for i, cell in enumerate(row):
             if i in self._ignored_headers_idx[self.current_index]:
                 continue
