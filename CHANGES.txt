@@ -2,11 +2,13 @@
 CHANGES
 =======
 
-v0.2, ?
+v0.2, 2013-02-20
 -------
 
 * Added Django interface to help matching imported data with model field names.
 * Use xlrd also for xlsx support (xlrd 0.8.0 supports now xlsx).
+* Support unicode headers
+* Fixed bug when ODS sheet contains skipped headers
 
 v0.1, 2012-11-09
 ----------------
