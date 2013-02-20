@@ -133,7 +133,7 @@ class ImportedFile(object):
             self.activate_sheet(sheet_idx)
             good_headers = set()
             if not case_sensitive:
-                possible_headers = map(str.lower, possible_headers)
+                possible_headers = [h.lower() for h in possible_headers]
             for i, h in enumerate(self.get_headers()):
                 h_norm = case_sensitive and h.strip() or h.strip().lower()
                 if h_norm == "":
