@@ -299,6 +299,8 @@ class ODSImportedFile(ImportedFile):
             raise StopIteration
         row_dict = SortedDict()
         for i in range(self._ncols):
+            if i in self._ignored_headers_idx[self.current_index]:
+                continue
             cell_value = self.current_sheet.get_cell_value(i+1, self._row_index+1)
             if cell_value and cell_value[0] == 'formula' and cell_value[1]:
                 raise ValueError(_("The ODS file contains formula. Please convert them to raw values before importing the file."))
