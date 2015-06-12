@@ -170,7 +170,7 @@ class CSVImportedFile(ImportedFile):
             # Python 2.4 csv module weakness ?
             if not dialect.delimiter or dialect.delimiter == '\r':
                 dialect.delimiter = ";"
-        except Exception, e:
+        except Exception as e:
             dialect = csv.excel
             dialect.delimiter = ";"
         self.delimiter = dialect.delimiter
@@ -216,7 +216,7 @@ class XLSImportedFile(ImportedFile):
         super(XLSImportedFile, self).__init__(datafile, sheet_index, skip_lines)
         try:
             self.book = xlrd.open_workbook(filename=self.file_path, file_contents=self.file_content)
-        except xlrd.XLRDError, e:
+        except xlrd.XLRDError as e:
             logging.warn("XLS import error: %s" % str(e))
             raise UnsupportedFileFormat(_(u"Unable to read the file. Are you sure it is an XLS file?"))
         self.data_sheet_indexes = [i for i, ws in enumerate(self.book.sheets()) if (ws.nrows > 0 and ws.ncols > 0)]
