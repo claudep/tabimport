@@ -11,8 +11,12 @@ Usage:
 """
 import csv
 import logging
+import sys
 import tempfile
 from datetime import datetime
+
+PY3 = sys.version_info >= (3, 0)
+string_type = str if PY3 else basestring
 
 try:
     # XLS/XLSX format
@@ -55,7 +59,7 @@ class FileFactory(object):
     @classmethod
     def _sniff_format(cls, dfile):
         """ dfile may be a file path or a django (Uploaded)File object """
-        if isinstance(dfile, basestring):
+        if isinstance(dfile, string_type):
             format = dfile.rsplit('.', 1)[-1]
         else:
             if "opendocument.spreadsheet" in dfile.content_type or dfile.name.endswith(".ods"):
@@ -87,7 +91,7 @@ class ImportedFile(object):
         self.data_sheet_indexes = [sheet_index]
         self.skip_lines = skip_lines
         self.file_content = None
-        if isinstance(datafile, basestring):
+        if isinstance(datafile, string_type):
             self.file_path = datafile
         else:
             try:
@@ -162,7 +166,7 @@ class CSVImportedFile(ImportedFile):
     encoding = 'latin-1'
     def __init__(self, datafile, sheet_index=0, **kwds):
         super(CSVImportedFile, self).__init__(datafile, sheet_index)
-        if isinstance(datafile, basestring):
+        if isinstance(datafile, string_type):
             # if datafile is a path, try to open the file
             datafile = open(datafile, 'r')
         try:
