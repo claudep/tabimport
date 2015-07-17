@@ -241,8 +241,11 @@ class XLSImportedFile(ImportedFile):
             self._row_index += 1
         if self._row_index >= self._nrows:
             # Increment current_index and skip to next sheet, if any
-            new_index = self.data_sheet_indexes.index(self.current_index)+1
-            if new_index < len(self.book.sheets()):
+            try:
+                new_index = self.data_sheet_indexes[self.data_sheet_indexes.index(self.current_index)+1]
+            except IndexError:
+                pass
+            else:
                 self.activate_sheet(new_index)
                 return self.next()
             raise StopIteration
