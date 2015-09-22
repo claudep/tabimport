@@ -1,8 +1,8 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='TabImport',
-    version='0.3.0',
+    version='0.3.1',
     author='Claude Paroz',
     author_email='claude@2xlibre.net',
     packages=['tabimport'],
@@ -10,6 +10,7 @@ setup(
     license='LICENSE.txt',
     description='Utility to ease reading data from tabular data files',
     long_description=open('README.txt').read(),
+    include_package_data=True,
     install_requires=[
         "Django >= 1.7",
         "django-formtools",
