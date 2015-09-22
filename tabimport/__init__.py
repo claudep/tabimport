@@ -17,6 +17,7 @@ from datetime import datetime
 
 PY3 = sys.version_info >= (3, 0)
 string_type = str if PY3 else basestring
+text_type = str if PY3 else unicode
 
 try:
     # XLS/XLSX format
@@ -205,7 +206,7 @@ class CSVImportedFile(ImportedFile):
             row = self.reader.next()
         for key, val in row.items():
             if val is None: val = ""
-            row[key] = unicode(val, "utf-8")
+            row[key] = text_type(val, "utf-8")
         return row
 
     def current_sheet_name(self):
@@ -232,7 +233,7 @@ class XLSImportedFile(ImportedFile):
             self._ignored_headers_idx[self.current_index] = []
             row = self.current_sheet.row(0)
             for i, cell in enumerate(row):
-                self._headers[self.current_index].append(unicode(cell.value).strip())
+                self._headers[self.current_index].append(text_type(cell.value).strip())
         return self._headers[self.current_index]
 
     def next(self):
