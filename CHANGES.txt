@@ -2,8 +2,15 @@
 CHANGES
 =======
 
+v0.3, 2015-09-22
+----------------
+
+* Added Python 3 support.
+* Use django-formtools as it is not in Django contrib apps any more.
+
+
 v0.2, 2013-02-20
--------
+----------------
 
 * Added Django interface to help matching imported data with model field names.
 * Use xlrd also for xlsx support (xlrd 0.8.0 supports now xlsx).
