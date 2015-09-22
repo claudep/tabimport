@@ -115,7 +115,7 @@ class ImportedFile(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         raise NotImplementedError("Abstract class")
 
     def get_headers(self):
@@ -190,20 +190,20 @@ class CSVImportedFile(ImportedFile):
         if not self.current_index in self._headers:
             self._ignored_headers_idx[self.current_index] = []
             if not self._first_line_read:
-                self._first_line = self.reader.next()
+                self._first_line = next(self.reader)
                 self._first_line_read = True
             self._headers[self.current_index] = self.reader.fieldnames
             if not isinstance(self._headers[self.current_index], list):
                 self._headers[self.current_index] = self._headers[self.current_index].split(self.delimiter)
         return self._headers[self.current_index]
 
-    def next(self):
+    def __next__(self):
         """ Returns a SortedDict : {'DESCRIPTOR': value, ...} """
         if self._first_line:
             row = self._first_line
             self._first_line = None
         else:
-            row = self.reader.next()
+            row = next(self.reader)
         for key, val in row.items():
             if val is None: val = ""
             row[key] = text_type(val, "utf-8")
@@ -236,7 +236,7 @@ class XLSImportedFile(ImportedFile):
                 self._headers[self.current_index].append(text_type(cell.value).strip())
         return self._headers[self.current_index]
 
-    def next(self):
+    def __next__(self):
         """ Returns a SortedDict : {'DESCRIPTOR': value, ...} """
         while self.skip_lines and self._row_index in self.skip_lines:
             self._row_index += 1
@@ -248,7 +248,7 @@ class XLSImportedFile(ImportedFile):
                 pass
             else:
                 self.activate_sheet(new_index)
-                return self.next()
+                return next(self)
             raise StopIteration
         row_dict = SortedDict()
         row = self.current_sheet.row(self._row_index)
@@ -299,7 +299,7 @@ class ODSImportedFile(ImportedFile):
                     self._headers[self.current_index].append("--empty--")
         return self._headers[self.current_index]
 
-    def next(self):
+    def __next__(self):
         """ Returns a SortedDict : {'DESCRIPTOR': value, ...} """
         while self.skip_lines and self._row_index in self.skip_lines:
             self._row_index += 1
