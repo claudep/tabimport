@@ -27,7 +27,8 @@ class DataImportView(SessionWizardView):
 
     def done(self, form_list, **kwargs):
         try:
-            created, modified = form_list[-1].import_data()
+            # Wrap form_list to workaround a Python 3 bug in django-formtools
+            created, modified = list(form_list)[-1].import_data()
         except Exception as e:
             if settings.DEBUG:
                 raise
