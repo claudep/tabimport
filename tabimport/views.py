@@ -2,11 +2,12 @@ import os
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.formtools.wizard.views import SessionWizardView
 from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext as _
+
+from formtools.wizard.views import SessionWizardView
 
 from . import FileFactory
 
