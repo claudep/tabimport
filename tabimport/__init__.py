@@ -13,6 +13,7 @@ import csv
 import logging
 import sys
 import tempfile
+from collections import OrderedDict
 from datetime import datetime
 
 PY3 = sys.version_info >= (3, 0)
@@ -34,7 +35,6 @@ try:
 except ImportError:
     has_ooolib = False
 
-from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext as _
 
 class UnsupportedFileFormat(Exception):
@@ -198,7 +198,7 @@ class CSVImportedFile(ImportedFile):
         return self._headers[self.current_index]
 
     def __next__(self):
-        """ Returns a SortedDict : {'DESCRIPTOR': value, ...} """
+        """ Returns an OrderedDict : {'DESCRIPTOR': value, ...} """
         if self._first_line:
             row = self._first_line
             self._first_line = None
@@ -237,7 +237,7 @@ class XLSImportedFile(ImportedFile):
         return self._headers[self.current_index]
 
     def __next__(self):
-        """ Returns a SortedDict : {'DESCRIPTOR': value, ...} """
+        """ Returns an OrderedDict : {'DESCRIPTOR': value, ...} """
         while self.skip_lines and self._row_index in self.skip_lines:
             self._row_index += 1
         if self._row_index >= self._nrows:
@@ -250,7 +250,7 @@ class XLSImportedFile(ImportedFile):
                 self.activate_sheet(new_index)
                 return next(self)
             raise StopIteration
-        row_dict = SortedDict()
+        row_dict = OrderedDict()
         row = self.current_sheet.row(self._row_index)
         headers = self.get_headers()
         for i, cell in enumerate(row):
@@ -300,12 +300,12 @@ class ODSImportedFile(ImportedFile):
         return self._headers[self.current_index]
 
     def __next__(self):
-        """ Returns a SortedDict : {'DESCRIPTOR': value, ...} """
+        """ Returns an OrderedDict : {'DESCRIPTOR': value, ...} """
         while self.skip_lines and self._row_index in self.skip_lines:
             self._row_index += 1
         if self._row_index >= self._nrows:
             raise StopIteration
-        row_dict = SortedDict()
+        row_dict = OrderedDict()
         for i in range(self._ncols):
             if i in self._ignored_headers_idx[self.current_index]:
                 continue
