@@ -118,6 +118,10 @@ class ImportedFile(object):
     def __next__(self):
         raise NotImplementedError("Abstract class")
 
+    def next(self):
+        # Python 2 compatibility
+        return type(self).__next__(self)
+
     def get_headers(self):
         raise NotImplementedError("Abstract class")
 
