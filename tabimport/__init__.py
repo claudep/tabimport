@@ -14,7 +14,7 @@ import logging
 import sys
 import tempfile
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, time
 
 PY3 = sys.version_info >= (3, 0)
 string_type = str if PY3 else basestring
@@ -261,7 +261,12 @@ class XLSImportedFile(ImportedFile):
             if i in self._ignored_headers_idx[self.current_index]:
                 continue
             if cell.ctype == xlrd.XL_CELL_DATE:
-                value = datetime(*xlrd.xldate_as_tuple(cell.value, self.book.datemode))
+                date_tuple = xlrd.xldate_as_tuple(cell.value, self.book.datemode)
+                if date_tuple[0] == 0:
+                    # No year, probably a time value
+                    value = time(*date_tuple[3:])
+                else:
+                    value = datetime(*date_tuple)
             else:
                 value = cell.value
             row_dict[headers[i]] = value
