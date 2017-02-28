@@ -169,26 +169,26 @@ class ImportedFile(object):
 
 class CSVImportedFile(ImportedFile):
     encoding = 'latin-1'
-    def __init__(self, datafile, sheet_index=0, **kwds):
+    def __init__(self, datafile, sheet_index=0, skip_lines=None, **kwds):
         super(CSVImportedFile, self).__init__(datafile, sheet_index)
         if isinstance(datafile, string_type):
             # if datafile is a path, try to open the file
             datafile = open(datafile, 'r')
         try:
             dialect = csv.Sniffer().sniff(datafile.read(2048))
-            # Python 2.4 csv module weakness ?
+            # Python csv module weakness?
             if not dialect.delimiter or dialect.delimiter == '\r':
                 dialect.delimiter = ";"
-        except Exception as e:
+        except Exception:
             dialect = csv.excel
             dialect.delimiter = ";"
         self.delimiter = dialect.delimiter
         datafile.seek(0)
-        datafile = UTF8Recoder(datafile, self.encoding)
         self.reader = csv.DictReader(datafile, dialect=dialect, **kwds)
         # It may happen that fieldnames are not filled before first line has been read
         self._first_line_read = False
         self._first_line = None
+        self.current_index = 0
 
     def get_headers(self):
         if not self.current_index in self._headers:
@@ -258,7 +258,7 @@ class XLSImportedFile(ImportedFile):
         row = self.current_sheet.row(self._row_index)
         headers = self.get_headers()
         for i, cell in enumerate(row):
-            if i in self._ignored_headers_idx[self.current_index]:
+            if i in self._ignored_headers_idx[self.current_index] or i >= len(headers):
                 continue
             if cell.ctype == xlrd.XL_CELL_DATE:
                 date_tuple = xlrd.xldate_as_tuple(cell.value, self.book.datemode)
