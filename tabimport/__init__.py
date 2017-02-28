@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 tabimport is a Python utility to ease imports of tabular data from CSV, ODF,
 XLS or XLSX files.
@@ -11,14 +10,9 @@ Usage:
 """
 import csv
 import logging
-import sys
 import tempfile
 from collections import OrderedDict
 from datetime import datetime, time
-
-PY3 = sys.version_info >= (3, 0)
-string_type = str if PY3 else basestring
-text_type = str if PY3 else unicode
 
 try:
     # XLS/XLSX format
@@ -44,7 +38,7 @@ class HeaderError(Exception):
     pass
 
 
-class FileFactory(object):
+class FileFactory:
     """ Returns a file object depending on the file format """
     def __new__(cls, datafile, **imp_params):
         format = cls._sniff_format(datafile)
@@ -60,7 +54,7 @@ class FileFactory(object):
     @classmethod
     def _sniff_format(cls, dfile):
         """ dfile may be a file path or a django (Uploaded)File object """
-        if isinstance(dfile, string_type):
+        if isinstance(dfile, str):
             format = dfile.rsplit('.', 1)[-1]
         else:
             if "opendocument.spreadsheet" in dfile.content_type or dfile.name.endswith(".ods"):
@@ -76,7 +70,7 @@ class FileFactory(object):
         return format
 
 
-class ImportedFile(object):
+class ImportedFile:
     """ Abstract class to get file object in different formats """
     # Set to True if the external lib does not support file-like objects
     force_file_to_disk = False
@@ -92,7 +86,7 @@ class ImportedFile(object):
         self.data_sheet_indexes = [sheet_index]
         self.skip_lines = skip_lines
         self.file_content = None
-        if isinstance(datafile, string_type):
+        if isinstance(datafile, str):
             self.file_path = datafile
         else:
             try:
@@ -163,15 +157,15 @@ class ImportedFile(object):
                     errors.append(_("The header '%s' is mandatory and is missing in sheet '%s' of your file") % (h, self.current_sheet_name()))
         self.activate_sheet(0)
         if errors:
-            raise HeaderError(u"\n".join(errors))
+            raise HeaderError("\n".join(errors))
         return warnings
 
 
 class CSVImportedFile(ImportedFile):
     encoding = 'latin-1'
     def __init__(self, datafile, sheet_index=0, skip_lines=None, **kwds):
-        super(CSVImportedFile, self).__init__(datafile, sheet_index)
-        if isinstance(datafile, string_type):
+        super().__init__(datafile, sheet_index)
+        if isinstance(datafile, str):
             # if datafile is a path, try to open the file
             datafile = open(datafile, 'r')
         try:
@@ -209,12 +203,11 @@ class CSVImportedFile(ImportedFile):
         else:
             row = next(self.reader)
         for key, val in row.items():
-            if val is None: val = ""
-            row[key] = text_type(val, "utf-8")
+            row[key] = '' if val is None else val
         return row
 
     def current_sheet_name(self):
-        return u"1"
+        return "1"
 
 
 class XLSImportedFile(ImportedFile):
@@ -222,12 +215,12 @@ class XLSImportedFile(ImportedFile):
     def __init__(self, datafile, sheet_index=0, skip_lines=None):
         if not has_xlrd:
             raise NotImplementedError("The xlrd library is not available")
-        super(XLSImportedFile, self).__init__(datafile, sheet_index, skip_lines)
+        super().__init__(datafile, sheet_index, skip_lines)
         try:
             self.book = xlrd.open_workbook(filename=self.file_path, file_contents=self.file_content)
         except xlrd.XLRDError as e:
             logging.warn("XLS import error: %s" % str(e))
-            raise UnsupportedFileFormat(_(u"Unable to read the file. Are you sure it is an XLS file?"))
+            raise UnsupportedFileFormat(_("Unable to read the file. Are you sure it is an XLS file?"))
         self.data_sheet_indexes = [i for i, ws in enumerate(self.book.sheets()) if (ws.nrows > 0 and ws.ncols > 0)]
         self.activate_sheet(self.data_sheet_indexes[0])
 
@@ -237,7 +230,7 @@ class XLSImportedFile(ImportedFile):
             self._ignored_headers_idx[self.current_index] = []
             row = self.current_sheet.row(0)
             for i, cell in enumerate(row):
-                self._headers[self.current_index].append(text_type(cell.value).strip())
+                self._headers[self.current_index].append(str(cell.value).strip())
         return self._headers[self.current_index]
 
     def __next__(self):
@@ -274,7 +267,7 @@ class XLSImportedFile(ImportedFile):
         return row_dict
 
     def activate_sheet(self, idx):
-        super(XLSImportedFile, self).activate_sheet(idx)
+        super().activate_sheet(idx)
         self.current_sheet = self.book.sheet_by_index(idx)
         self._nrows = self.current_sheet.nrows
         self._ncols = self.current_sheet.ncols
@@ -289,7 +282,7 @@ class ODSImportedFile(ImportedFile):
     def __init__(self, datafile, sheet_index=0, skip_lines=None):
         if not has_ooolib:
             raise NotImplementedError("The ooolib library is not available")
-        super(ODSImportedFile, self).__init__(datafile, sheet_index, skip_lines)
+        super().__init__(datafile, sheet_index, skip_lines)
         book = ooolib.Calc(opendoc=self.file_path)
         book.set_sheet_index(sheet_index)
         self.current_sheet = book
@@ -321,10 +314,9 @@ class ODSImportedFile(ImportedFile):
             cell_value = self.current_sheet.get_cell_value(i+1, self._row_index+1)
             if cell_value and cell_value[0] == 'formula' and cell_value[1]:
                 raise ValueError(_("The ODS file contains formula. Please convert them to raw values before importing the file."))
-            row_dict[self.get_headers()[i]] = cell_value and cell_value[1] or u""
+            row_dict[self.get_headers()[i]] = cell_value and cell_value[1] or ""
         self._row_index += 1
         return row_dict
 
     def current_sheet_name(self):
         return "??" # FIXME: self.current_sheet.title
-
