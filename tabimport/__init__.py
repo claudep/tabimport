@@ -175,7 +175,7 @@ class CSVImportedFile(ImportedFile):
                 dialect.delimiter = ";"
         except Exception:
             dialect = csv.excel
-            dialect.delimiter = ";"
+            dialect.delimiter = kwds.get('delimiter', ';')
         self.delimiter = dialect.delimiter
         datafile.seek(0)
         self.reader = csv.DictReader(datafile, dialect=dialect, **kwds)
