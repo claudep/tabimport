@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='TabImport',
-    version='0.4.0',
+    version='0.5.0',
     author='Claude Paroz',
     author_email='claude@2xlibre.net',
     packages=['tabimport'],
@@ -12,7 +12,7 @@ setup(
     long_description=open('README.txt').read(),
     include_package_data=True,
     install_requires=[
-        "Django >= 1.8",
+        "Django >= 2.2",
         "django-formtools",
     ],
 )

@@ -15,12 +15,19 @@ from collections import OrderedDict
 from datetime import datetime, time
 
 try:
-    # XLS/XLSX format
+    # XLS format
     # http://www.lexicon.net/sjmachin/xlrd.html
     import xlrd
     has_xlrd = True
 except ImportError:
     has_xlrd = False
+
+try:
+    # XLSX format
+    import openpyxl
+    has_openpyxl = True
+except ImportError:
+    has_openpyxl = False
 
 try:
     # ODF format
@@ -44,8 +51,10 @@ class FileFactory:
         format = cls._sniff_format(datafile)
         if format == 'ods':
             return ODSImportedFile(datafile, **imp_params)
-        elif format in ('xls', 'xlsx'):
+        elif format == 'xls':
             return XLSImportedFile(datafile, **imp_params)
+        elif format == 'xlsx':
+            return XLSXImportedFile(datafile, **imp_params)
         elif format == 'csv':
             return CSVImportedFile(datafile, **imp_params)
         else:
@@ -274,6 +283,66 @@ class XLSImportedFile(ImportedFile):
 
     def current_sheet_name(self):
         return self.book.sheet_by_index(self.current_index).name
+
+
+class XLSXImportedFile(ImportedFile):
+    """ XLS reader based on xlrd (multiple sheets not yet implemented)"""
+    def __init__(self, datafile, sheet_index=0, skip_lines=()):
+        if not has_openpyxl:
+            raise NotImplementedError("The openpyxl library is not available")
+        super().__init__(datafile, sheet_index=sheet_index, skip_lines=skip_lines)
+        try:
+            self.book = openpyxl.load_workbook(filename=self.file_path)
+        except Exception as e:
+            logging.warn("XLSX import error: %s" % str(e))
+            raise UnsupportedFileFormat(_("Unable to read the file. Are you sure it is an XLSX file?"))
+        self.data_sheet_indexes = [
+            idx for idx, ws in enumerate(self.book.worksheets)
+            if (ws.max_row > 1 and ws.max_column > 1)
+        ]
+        self.activate_sheet(self.data_sheet_indexes[0])
+
+    def get_headers(self):
+        if not self.current_index in self._headers:
+            self._headers[self.current_index] = []
+            self._ignored_headers_idx[self.current_index] = []
+            row = next(self.current_sheet.rows)
+            for i, cell in enumerate(row):
+                self._headers[self.current_index].append(str(cell.value).strip())
+        return self._headers[self.current_index]
+
+    def __next__(self):
+        """ Returns an OrderedDict : {'DESCRIPTOR': value, ...} """
+        while self.skip_lines and self._row_index in self.skip_lines:
+            self._row_index += 1
+        try:
+            row = next(self._row_iterator)
+        except StopIteration:
+            # Increment current_index and skip to next sheet, if any
+            try:
+                new_index = self.data_sheet_indexes[self.data_sheet_indexes.index(self.current_index)+1]
+            except (IndexError, ValueError):
+                pass
+            else:
+                self.activate_sheet(new_index)
+                return next(self)
+            raise
+        row_dict = OrderedDict()
+        headers = self.get_headers()
+        for i, cell in enumerate(row):
+            if i in self._ignored_headers_idx[self.current_index] or i >= len(headers):
+                continue
+            row_dict[headers[i]] = cell.value
+        self._row_index += 1
+        return row_dict
+
+    def activate_sheet(self, idx):
+        super().activate_sheet(idx)
+        self.current_sheet = self.book.worksheets[idx]
+        self._row_iterator = self.current_sheet.iter_rows(min_row=2)
+
+    def current_sheet_name(self):
+        return self.book.sheetnames[self.current_index]
 
 
 class ODSImportedFile(ImportedFile):
