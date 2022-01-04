@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='TabImport',
-    version='0.5.0',
+    version='0.5.1',
     author='Claude Paroz',
     author_email='claude@2xlibre.net',
     packages=['tabimport'],
