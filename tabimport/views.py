@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from formtools.wizard.views import SessionWizardView
 

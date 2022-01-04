@@ -31,7 +31,7 @@ To use the Django import helper in your Django project, follow the steps below.
 
   2. Include the urls of tabimport into your urls::
 
-        url(r'^data-import/', include('tabimport.urls')),
+        path('data-import/', include('tabimport.urls')),
 
   3. In any of your models for which you'd like to enable data import, set a
      class variable like this: ``support_tabimport = True``.
